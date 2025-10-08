@@ -12,7 +12,7 @@ A: There's two points to this. The first being that I dabble in several non-prog
 
 Q: Are the languages you code in here you main ones?
 
-A: Sort-of. Professionally, I've mainly worked with Python and Java, but have dabbles in many others throug hschooling or work. The languages you see here are mroe because they are the most typical ones I see in job listings.
+A: Sort-of. Professionally, I've mainly worked with Python and Java, but have dabbled in several others through schooling or work. The languages you see here are more because they are the most typical ones I see in job listings.
 
 
 Q: Are you more of a frontend, backend, or full-stack developer?
