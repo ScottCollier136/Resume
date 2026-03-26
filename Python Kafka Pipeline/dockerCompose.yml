@@ -1,0 +1,77 @@
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    restart: always
+    ports:
+      - "2181:2181"
+
+  # Kafka container. Used to transfer/broker data/messages 
+  kafka:
+    image: wurstmeister/kafka
+    restart: always
+    ports:
+      - target: 9094
+        published: 9094
+        protocol: tcp
+        mode: host
+    depends_on:
+      - zookeeper
+    env_file:
+      - ./kafka.env
+    environment:
+      HOSTNAME_COMMAND: "docker info | grep ^Name: | cut -d' ' -f 2"
+      # limits the maximum heap-size, otherwise will continue to increase
+      KAFKA_HEAP_OPTS: -Xmx256M -Xms128M
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_CREATE_TOPICS: "topic-test:1:1"
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  kafka-consumer:
+    build:
+      context: ./DataConsumer
+    container_name: kafka-consumer
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "0.15"
+          #cpus: "0.1"
+    depends_on:
+      - kafka
+    environment:
+      #task_id: "{{.Task.Slot}}"
+      task_id: "1"
+
+
+  kafka-producer:
+    build:
+      context: ./DataProducer
+    container_name: kafka-producer
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "0.15"
+          #cpus: "0.1"
+    depends_on:
+      - kafka
+    environment:
+      #task_id: "{{.Task.Slot}}"
+      task_id: "1"
+
+
+
+  postgres:
+      image: postgres
+      build:
+        context: ./Postgres
+      restart: always
+      environment:
+        - POSTGRES_USER=user
+        - POSTGRES_PASSWORD=pass
+      ports:
+        - '5432:5432'
+      #volumes: 
+        #- data_sql:/var/lib/postgresql
