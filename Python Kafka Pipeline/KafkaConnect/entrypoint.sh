@@ -6,7 +6,7 @@ import kafka
 import sys
 
 try:
-  consumer = kafka.KafkaConsumer(group_id='test', bootstrap_servers=['kafka:9092'])
+  consumer = kafka.KafkaConsumer(bootstrap_servers=['kafka:9092'])
   topics = consumer.topics()
 
   if not topics: 
@@ -19,8 +19,6 @@ sys.exit(0)
 END
 }
 
-echo "Checking for Kafka ..."
+echo "Starting..."
 
-echo "Starting Producer ..."
-
-python /dataProducer.py
+/bin/connect-standalone /worker.properties /connector.properties.d/*

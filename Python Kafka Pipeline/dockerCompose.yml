@@ -23,7 +23,7 @@ services:
       # limits the maximum heap-size, otherwise will continue to increase
       KAFKA_HEAP_OPTS: -Xmx256M -Xms128M
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-      KAFKA_CREATE_TOPICS: "topic-test:1:1"
+      #KAFKA_CREATE_TOPICS: "topic-test:1:1"
 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -33,16 +33,9 @@ services:
       context: ./DataConsumer
     container_name: kafka-consumer
     restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: "0.15"
-          #cpus: "0.1"
     depends_on:
       - kafka
-    environment:
-      #task_id: "{{.Task.Slot}}"
-      task_id: "1"
+
 
 
   kafka-producer:
@@ -50,28 +43,67 @@ services:
       context: ./DataProducer
     container_name: kafka-producer
     restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: "0.15"
-          #cpus: "0.1"
     depends_on:
       - kafka
-    environment:
-      #task_id: "{{.Task.Slot}}"
-      task_id: "1"
-
 
 
   postgres:
       image: postgres
+      container_name: postgres
       build:
         context: ./Postgres
       restart: always
       environment:
-        - POSTGRES_USER=user
-        - POSTGRES_PASSWORD=pass
+        POSTGRES_USER: postgres     
+        POSTGRES_PASSWORD: postgres 
+        POSTGRES_DB: postgres  
       ports:
         - '5432:5432'
       #volumes: 
-        #- data_sql:/var/lib/postgresql
+      #  - data_sql:/var/lib/postgresql
+
+
+  # kafka-connect container
+  # this container is for the postgres sink
+  kafka-connect-postgres-sink:
+    build:
+      context: ./KafkaConnect
+    #image: my-kafka-connect-pg-sink
+    image: confluentinc/cp-kafka-connect
+    container_name: kafka-connect
+    ports:
+      - 8083:8083
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka:9092
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: my-connect-cluster 
+      CONNECT_CONFIG_STORAGE_TOPIC: connect-configs
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: connect-status
+      CONNECT_ZOOKEEPER_CONNECT: zookeeper:2181
+
+      CONNECT_REST_ADVERTISED_HOST_NAME: docker
+      CONNECT_SCHEMAS_ENABLE: "false"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+
+#    env_file:
+#      - ./KafkaConnect/KafkaConnectPostgresSink.env
+    depends_on:
+      - zookeeper
+      - kafka
+      - postgres
+    restart: always
+    volumes:
+      - ./KafkaConnect/worker.properties:/worker.properties
+      - ./KafkaConnect/connector.properties.d:/connector.properties.d
+#      - ./KafkaConnect/worker.properties:/worker.properties
+#      - ./KafkaConnect/connector.properties:/connector.properties
+#      - ./kafka/kafka-connect-mqtt-source/custom_smt:/custom_smt/built-transformations

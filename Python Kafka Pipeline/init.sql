@@ -1,5 +1,0 @@
-CREATE TABLE IF NOT EXISTS myTable (
-    ts TIMESTAMP,
-    Value1 INTEGER,
-    Value2 INTEGER
-);

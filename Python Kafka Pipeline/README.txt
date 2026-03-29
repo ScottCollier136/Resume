@@ -1,3 +1,3 @@
-This is my attempt at reconstructing my Kafka pipeline from when I worked at Autometrics. This way I can provide mroe of an example of the work I've done.
+This is my attempt at reconstructing my Kafka pipeline from when I worked at Autometrics. This way I can provide more of an example of the work I've done.
 
-This pipeline is being made from my vague memories, and is also a simplified version compared to the actual pipeline.
+This pipeline is being made from my vague memories, and is also a simplified version compared to the actual pipeline. I will not attempts at recreating the extended up- and down-stream data flows, the entire Django core, or Javascript front-end. (At least for now)
